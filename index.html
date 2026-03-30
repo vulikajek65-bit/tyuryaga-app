@@ -1,253 +1,254 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Тюряга: Панель управления</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        /* --- БАЗОВЫЙ СТИЛЬ (ТЕМНАЯ ТЕМА) --- */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; /* Темный фон */
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Профиль - Тюряга</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    /* Берем цвет фона из темы телеграма, если есть, иначе наш темный */
+    background: var(--tg-theme-bg-color, #121212); 
+    display: flex;
+    justify-content: center;
+  }
 
-        /* --- СКРЫТИЕ ЭЛЕМЕНТОВ --- */
-        .hidden { display: none !important; }
+  .prison-profile {
+    font-family: 'Arial Black', Impact, sans-serif;
+    background: #1a1a1a; 
+    background-image: repeating-linear-gradient(45deg, #181818 25%, transparent 25%, transparent 75%, #181818 75%, #181818), repeating-linear-gradient(45deg, #181818 25%, #1a1a1a 25%, #1a1a1a 75%, #181818 75%, #181818);
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
+    color: #e0e0e0;
+    width: 100%;
+    max-width: 500px;
+    /* Убираем внешние отступы для мобильного вида */
+    margin: 0; 
+    border: 4px solid #4a4a4a;
+    box-sizing: border-box;
+    padding: 20px;
+    text-transform: uppercase;
+    min-height: 100vh; /* Растягиваем на весь экран */
+  }
 
-        /* --- ЭКРАН ВХОДА И ИНСТРУКЦИЯ --- */
-        .login-card {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-top: 20px;
-        }
-        .login-card h2 { margin-top: 0; color: #ff4757; text-align: center; }
-        .instructions {
-            background-color: #2f3542;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            color: #dfe4ea;
-        }
-        .instructions span { color: #ffa502; font-weight: bold; }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #57606f;
-            border-radius: 8px;
-            background-color: #2f3542;
-            color: white;
-            box-sizing: border-box;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-primary { background-color: #ff4757; color: white; }
-        .btn-primary:active { background-color: #ff6b81; }
+  .header-section {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px dashed #555;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+  }
 
-        /* --- ЭКРАН ПРОФИЛЯ --- */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            margin-top: 20px;
-        }
-        .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #57606f;
-            margin-right: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-        }
-        .user-info h3 { margin: 0; font-size: 18px; }
-        .user-info p { margin: 5px 0 0 0; color: #a4b0be; font-size: 14px; }
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border: 3px solid #7a0000;
+    border-radius: 4px;
+    margin-right: 15px;
+    background: #222;
+    box-shadow: 0 0 10px rgba(122,0,0,0.5);
+    object-fit: cover;
+  }
 
-        /* Блоки статистики (Ресурсы) */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .stat-value { font-size: 20px; font-weight: bold; color: #ffa502; }
-        .stat-label { font-size: 12px; color: #a4b0be; margin-top: 5px; }
-        .stat-box.red .stat-value { color: #ff4757; }
+  .info-block {
+    flex-grow: 1;
+  }
 
-        /* Панель управления ботом */
-        .control-panel {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-        }
-        .control-panel h4 { margin-top: 0; text-align: center; }
-        .btn-success { background-color: #2ed573; color: white; margin-bottom: 10px; }
-        .btn-danger { background-color: #ff4757; color: white; }
-    </style>
+  .info-block h1 {
+    margin: 0;
+    font-size: 18px;
+    color: #ffcc00;
+    text-shadow: 2px 2px 2px #000;
+    letter-spacing: 1px;
+    word-break: break-all;
+  }
+
+  .info-block p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  .vip-badge {
+    background: #7a0000;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    vertical-align: middle;
+    margin-left: 5px;
+    border: 1px solid #ff4444;
+  }
+
+  .xp-bar {
+    background: #222;
+    height: 12px;
+    border-radius: 3px;
+    margin-top: 8px;
+    border: 1px solid #444;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .xp-fill {
+    background: #ff8c00;
+    height: 100%;
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.3);
+    transition: width 0.5s ease-in-out;
+  }
+
+  .stats-container, .resources-container, .weapons-container {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #333;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    color: #ff4444;
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    text-shadow: 1px 1px 1px #000;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    border-bottom: 1px dotted #333;
+    padding-bottom: 2px;
+  }
+
+  .stat-val {
+    color: #ffcc00;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px #000;
+  }
+</style>
 </head>
 <body>
 
-<div class="container">
-
-    <div id="login-screen" class="login-card">
-        <h2>Доступ закрыт</h2>
-        <div class="instructions">
-            Чтобы бот мог фармить за тебя, ему нужен ключ доступа (initData).<br><br>
-            <b>Как получить ключ:</b><br>
-            1. Зайди в оригинальную игру с <span>компьютера</span>.<br>
-            2. Нажми <span>F12</span> и открой вкладку <span>Network (Сеть)</span>.<br>
-            3. В фильтре выбери <span>Fetch/XHR</span>.<br>
-            4. Соверши любое действие в игре.<br>
-            5. Кликни на появившийся запрос, открой вкладку <span>Payload</span>.<br>
-            6. Скопируй длинную строку, которая начинается с <span>query_id=...</span>
-        </div>
-        
-        <input type="text" id="manual-token" placeholder="Вставь строку query_id=... сюда">
-        <button class="btn btn-primary" onclick="manualLogin()">Войти в профиль</button>
+<div class="prison-profile">
+  <div class="header-section">
+    <img id="avatar" class="avatar" src="" alt="Аватар" onerror="this.src='https://via.placeholder.com/100/222/7a0000?text=ЗЕК'">
+    <div class="info-block">
+      <h1><span id="nickname">Имя</span> <span id="vip-badge" class="vip-badge" style="display: none;">ВОРОВСКОЙ</span></h1>
+      <p>Игрок: <span id="playerId" class="stat-val">#0</span> | TG: <span id="userId" class="stat-val">0</span></p>
+      <p>Уровень: <span id="level" class="stat-val">0</span></p>
+      <div id="xp-container" class="xp-bar" title="Опыт: 0 / 0"><div id="xp-fill" class="xp-fill" style="width: 0%;"></div></div>
     </div>
+  </div>
 
-    <div id="profile-screen" class="hidden">
-        
-        <div class="profile-header">
-            <div class="avatar">👤</div>
-            <div class="user-info">
-                <h3 id="ui-name">Загрузка...</h3>
-                <p id="ui-id">ID: ---------</p>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-value" id="ui-cigarettes">0</div>
-                <div class="stat-label">ПАПИРОСЫ 🚬</div>
-            </div>
-            <div class="stat-box red">
-                <div class="stat-value" id="ui-respect">0</div>
-                <div class="stat-label">АВТОРИТЕТ 👑</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="ui-sugar">0</div>
-                <div class="stat-label">САХАР 🧊</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="ui-soap">0</div>
-                <div class="stat-label">МЫЛО 🧼</div>
-            </div>
-        </div>
-
-        <div class="control-panel">
-            <h4>Управление автофармом</h4>
-            <button class="btn btn-success" onclick="toggleFarm(true)">ВКЛЮЧИТЬ ФАРМ 🟢</button>
-            <button class="btn btn-danger" onclick="toggleFarm(false)">ОСТАНОВИТЬ 🔴</button>
-        </div>
-
+  <div class="stats-container">
+    <h2 class="section-title">Характеристики</h2>
+    <div class="grid-2">
+      <div class="stat-item"><span>Авторитет:</span> <span id="authority" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Бицуха:</span> <span id="biceps" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Энергия:</span> <span id="energy" class="stat-val">0 / 0</span></div>
     </div>
+  </div>
 
+  <div class="weapons-container">
+    <h2 class="section-title">Урон</h2>
+    <div class="grid-2">
+      <div class="stat-item"><span>Яд:</span> <span id="poison" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Огнестрел:</span> <span id="gunshot" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Холодное:</span> <span id="knife" class="stat-val">0</span></div>
+    </div>
+  </div>
+
+  <div class="resources-container">
+    <h2 class="section-title">Нычка</h2>
+    <div class="grid-2">
+      <div class="stat-item"><span>Папиросы:</span> <span id="cigarettes" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Рубли:</span> <span id="rubles" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Сахар:</span> <span id="sugar" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Чифир:</span> <span id="chefir" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Мыло:</span> <span id="soap" class="stat-val">0</span></div>
+      <div class="stat-item"><span>Сгущенка:</span> <span id="condensed_milk" class="stat-val">0</span></div>
+    </div>
+  </div>
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
+  // 1. Инициализация Telegram Web App
+  const tg = window.Telegram.WebApp;
+  tg.expand(); // Разворачиваем на весь экран
+  tg.ready();  // Сообщаем телеграму, что приложение готово
+
+  // 2. Базовые данные игры (в будущем будешь брать их с сервера)
+  const gameData = {
+    playerId: 233,
+    level: 152,
+    currentLevelXp: 468160,
+    nextLevelXp: 474300,
+    authority: 12729856,
+    biceps: 7231,
+    energy: 344,
+    maxEnergy: 344,
+    vpi: { active: true, name: "vorovskoy" },
+    user: { photo_url: "https://cdn.tuyraga.ru/avatars/233.jpg", first_name: "Черных С Д", id: 6044198662 },
+    combatStats: { poison: 5663, gunshot: 3155, knife: 1609 },
+    currencies: { cigarettes: 62690, rubles: 41378, sugar: 4486674, chefir: 1455, soap: 384, condensed_milk: 53 }
+  };
+
+  // 3. Подтягиваем реальные данные пользователя из Telegram (если открыто в боте)
+  if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    gameData.user.first_name = tg.initDataUnsafe.user.first_name;
+    gameData.user.id = tg.initDataUnsafe.user.id;
+    // Если у юзера в ТГ есть аватарка (премиум), можно попробовать достать её, 
+    // но пока оставим игровую, чтобы стиль сохранялся.
+  }
+
+  // Функция для форматирования чисел (1 000 000)
+  const formatNum = (num) => new Intl.NumberFormat('ru-RU').format(num);
+
+  // 4. Отрисовка профиля
+  function renderProfile(data) {
+    document.getElementById('avatar').src = data.user.photo_url;
+    document.getElementById('nickname').textContent = data.user.first_name;
+    document.getElementById('playerId').textContent = '#' + data.playerId;
+    document.getElementById('userId').textContent = data.user.id;
+    document.getElementById('level').textContent = data.level;
+
+    if (data.vpi && data.vpi.active) {
+      document.getElementById('vip-badge').style.display = 'inline-block';
+    }
+
+    const xpPercent = (data.currentLevelXp / data.nextLevelXp) * 100;
+    setTimeout(() => { document.getElementById('xp-fill').style.width = xpPercent + '%'; }, 100);
     
-    // Расширяем приложение на весь экран телефона
-    tg.expand(); 
-    
-    // Функция показа профиля (прячет логин, показывает профиль)
-    function showProfile(userData) {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('profile-screen').classList.remove('hidden');
-        
-        // Заполняем профиль данными
-        // Если данные есть, ставим их, если нет — ставим "Неизвестный зек"
-        document.getElementById('ui-name').innerText = userData.first_name || "Неизвестный зек";
-        document.getElementById('ui-id').innerText = "ID: " + (userData.id || "000000");
-        
-        // Здесь в будущем мы будем получать реальные цифры от твоего Python-сервера!
-        // Пока ставим красивые тестовые цифры для наглядности
-        document.getElementById('ui-cigarettes').innerText = "62 290";
-        document.getElementById('ui-respect').innerText = "12 479 816";
-        document.getElementById('ui-sugar').innerText = "140";
-        document.getElementById('ui-soap').innerText = "5";
-        
-        // Говорим Telegram, что мы готовы
-        tg.ready(); 
-    }
+    document.getElementById('authority').textContent = formatNum(data.authority);
+    document.getElementById('biceps').textContent = formatNum(data.biceps);
+    document.getElementById('energy').textContent = `${data.energy} / ${data.maxEnergy}`;
 
-    // Проверяем, открыли ли нас внутри Telegram
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        // МЕГА-ФИШКА: Telegram сам отдал нам данные юзера! 
-        // Инструкция логина не нужна, сразу показываем профиль.
-        showProfile(tg.initDataUnsafe.user);
-        
-        // Эту строку tg.initData мы позже отправим нашему Python-боту 
-        // для автоматического входа в игру.
-        console.log("Автоматический токен ТГ:", tg.initData);
-    } else {
-        // Открыли в браузере с ПК, показываем инструкцию для ручного ввода
-        console.log("Открыто вне Telegram, показываем окно входа.");
-    }
+    document.getElementById('poison').textContent = formatNum(data.combatStats.poison);
+    document.getElementById('gunshot').textContent = formatNum(data.combatStats.gunshot);
+    document.getElementById('knife').textContent = formatNum(data.combatStats.knife);
 
-    // Функция для ручного входа (если юзер ввел строку руками и нажал кнопку)
-    function manualLogin() {
-        const tokenInput = document.getElementById('manual-token').value;
-        if (tokenInput.length > 20) {
-            // Имитируем успешный вход
-            showProfile({ first_name: "Тестовый игрок", id: "9999999" });
-            alert("Ключ принят! В реальности мы отправим его на Python-сервер для проверки.");
-        } else {
-            alert("Это не похоже на ключ! Он должен быть длинным и начинаться с query_id=");
-        }
-    }
+    document.getElementById('cigarettes').textContent = formatNum(data.currencies.cigarettes);
+    document.getElementById('rubles').textContent = formatNum(data.currencies.rubles);
+    document.getElementById('sugar').textContent = formatNum(data.currencies.sugar);
+    document.getElementById('chefir').textContent = formatNum(data.currencies.chefir);
+    document.getElementById('soap').textContent = formatNum(data.currencies.soap);
+    document.getElementById('condensed_milk').textContent = formatNum(data.currencies.condensed_milk);
+  }
 
-    // Функция для кнопок управления
-    function toggleFarm(isActive) {
-        if (isActive) {
-            // Встроенная функция Telegram: легкая вибрация (тактильный отклик)
-            tg.HapticFeedback.notificationOccurred('success'); 
-            alert("Команда 'Включить' отправлена на сервер!");
-        } else {
-            tg.HapticFeedback.notificationOccurred('error');
-            alert("Команда 'Выключить' отправлена на сервер!");
-        }
-    }
+  // Запускаем
+  renderProfile(gameData);
 </script>
 </body>
 </html>
