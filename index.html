@@ -10,11 +10,10 @@
   body {
     margin: 0;
     padding: 0;
-    /* Берем цвет фона из темы телеграма, если есть, иначе наш темный */
     background: var(--tg-theme-bg-color, #121212);
     display: flex;
     justify-content: center;
-    overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку из-за меню */
+    overflow-x: hidden;
   }
 
   .prison-profile {
@@ -26,14 +25,30 @@
     color: #e0e0e0;
     width: 100%;
     max-width: 500px;
-    /* Убираем внешние отступы для мобильного вида */
     margin: 0;
     border: 4px solid #4a4a4a;
     box-sizing: border-box;
     padding: 20px;
     text-transform: uppercase;
-    min-height: 100vh; /* Растягиваем на весь экран */
-    padding-top: 70px; /* Добавляем отступ сверху, чтобы контент не перекрывался иконкой меню */
+    min-height: 100vh;
+    padding-top: 70px;
+  }
+
+  /* Экран ошибки вне Телеграма */
+  #error-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #1a1a1a;
+    z-index: 100000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #ff4444;
+    font-family: 'Arial Black', Impact, sans-serif;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
   }
 
   .header-section {
@@ -140,12 +155,11 @@
     text-shadow: 1px 1px 1px #000;
   }
 
-  /* Стили для иконки меню */
   .hamburger-icon {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 10001; /* Выше всего */
+    z-index: 10001;
     cursor: pointer;
     padding: 5px;
     background: #1a1a1a;
@@ -157,6 +171,7 @@
     height: 20px;
     width: 25px;
   }
+  
   .hamburger-icon span {
     display: block;
     height: 3px;
@@ -166,23 +181,23 @@
     transition: all 0.3s ease;
   }
 
-  /* Стили для контейнера меню */
   .menu-container {
     position: fixed;
     top: 0;
-    left: -280px; /* Изначально скрыто */
+    left: -280px;
     width: 280px;
     height: 100vh;
-    background-color: rgba(26, 26, 26, 0.95); /* Немного прозрачности для эффекта */
-    z-index: 10000; /* Чуть ниже иконки */
+    background-color: rgba(26, 26, 26, 0.95);
+    z-index: 10000;
     color: #e0e0e0;
     transition: left 0.3s ease;
-    padding: 60px 20px 20px; /* Отступ сверху для иконки, затем обычные */
+    padding: 60px 20px 20px;
     box-sizing: border-box;
     border-right: 4px solid #4a4a4a;
     font-family: 'Arial Black', Impact, sans-serif;
     text-transform: uppercase;
   }
+  
   .menu-container.show {
     left: 0;
   }
@@ -201,9 +216,11 @@
     padding: 0;
     margin: 0;
   }
+  
   .menu-item {
     margin-bottom: 15px;
   }
+  
   .menu-link {
     text-decoration: none;
     color: #e0e0e0;
@@ -212,9 +229,11 @@
     padding: 5px 0;
     transition: color 0.2s ease;
   }
+  
   .menu-link:hover {
     color: #ffcc00;
   }
+  
   .menu-link.active {
     color: #ff8c00;
     border-bottom: 2px solid #ff8c00;
@@ -222,6 +241,11 @@
 </style>
 </head>
 <body>
+
+<div id="error-screen">
+  <h2>ОШИБКА ДОСТУПА</h2>
+  <p>Приложение можно открыть только через Telegram бота!</p>
+</div>
 
 <div class="hamburger-icon" id="hamburger-icon">
   <span></span>
@@ -247,7 +271,7 @@
   </div>
 </div>
 
-<div class="prison-profile">
+<div class="prison-profile" id="main-content">
   <div class="header-section">
     <img id="avatar" class="avatar" src="" alt="Аватар" onerror="this.src='https://via.placeholder.com/100/222/7a0000?text=ЗЕК'">
     <div class="info-block">
@@ -290,96 +314,100 @@
 </div>
 
 <script>
-  // 1. Инициализация Telegram Web App
   const tg = window.Telegram.WebApp;
-  tg.expand(); // Разворачиваем на весь экран
-  tg.ready();  // Сообщаем телеграму, что приложение готово
+  tg.expand();
+  tg.ready();
 
-  // Логика переключения меню
-  const hamburgerIcon = document.getElementById('hamburger-icon');
-  const menuContainer = document.getElementById('menu-container');
+  // ПРОВЕРКА АВТОРИЗАЦИИ (Есть ли данные от Телеграма)
+  if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+    // Если открыли просто в браузере
+    document.getElementById('error-screen').style.display = 'flex';
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('hamburger-icon').style.display = 'none';
+  } else {
+    // ДЛЯ ТЕСТА: Показываем сырую строку initData, чтобы ты убедился, что она есть
+    // В рабочей версии эту строку нужно удалить
+    alert("Успешный вход! Твой initData:\n\n" + tg.initData);
 
-  hamburgerIcon.addEventListener('click', () => {
-    menuContainer.classList.toggle('show');
-  });
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const menuContainer = document.getElementById('menu-container');
 
-  // Закрываем меню при клике снаружи
-  document.addEventListener('click', (event) => {
-    if (!menuContainer.contains(event.target) && event.target !== hamburgerIcon) {
-      menuContainer.classList.remove('show');
-    }
-  });
+    hamburgerIcon.addEventListener('click', () => {
+      menuContainer.classList.toggle('show');
+    });
 
-  // 2. Базовые данные игры (в будущем будешь брать их с сервера)
-  const gameData = {
-    playerId: 233,
-    level: 152,
-    currentLevelXp: 468160,
-    nextLevelXp: 474300,
-    authority: 12729856,
-    biceps: 7231,
-    energy: 344,
-    maxEnergy: 344,
-    vpi: { active: true, name: "vorovskoy" },
-    user: { photo_url: "https://cdn.tuyraga.ru/avatars/233.jpg", first_name: "Черных С Д", id: 6044198662 },
-    combatStats: { poison: 5663, gunshot: 3155, knife: 1609 },
-    currencies: { cigarettes: 62690, rubles: 41378, sugar: 4486674, chefir: 1455, soap: 384, condensed_milk: 53 }
-  };
+    document.addEventListener('click', (event) => {
+      if (!menuContainer.contains(event.target) && event.target !== hamburgerIcon) {
+        menuContainer.classList.remove('show');
+      }
+    });
 
-  // 3. Подтягиваем реальные данные пользователя из Telegram (если открыто в боте)
-  if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    // Базовые данные игры
+    const gameData = {
+      playerId: 233,
+      level: 152,
+      currentLevelXp: 468160,
+      nextLevelXp: 474300,
+      authority: 12729856,
+      biceps: 7231,
+      energy: 344,
+      maxEnergy: 344,
+      vpi: { active: true, name: "vorovskoy" },
+      user: { photo_url: "https://cdn.tuyraga.ru/avatars/233.jpg", first_name: "Игрок", id: 0 },
+      combatStats: { poison: 5663, gunshot: 3155, knife: 1609 },
+      currencies: { cigarettes: 62690, rubles: 41378, sugar: 4486674, chefir: 1455, soap: 384, condensed_milk: 53 }
+    };
+
+    // Подставляем реальное имя и ID из Телеграма
     gameData.user.first_name = tg.initDataUnsafe.user.first_name;
     gameData.user.id = tg.initDataUnsafe.user.id;
-  }
 
-  // Функция для форматирования чисел (1 000 000)
-  const formatNum = (num) => new Intl.NumberFormat('ru-RU').format(num);
+    const formatNum = (num) => new Intl.NumberFormat('ru-RU').format(num);
 
-  // 4. Отрисовка профиля
-  function renderProfile(data) {
-    document.getElementById('avatar').src = data.user.photo_url;
-    document.getElementById('nickname').textContent = data.user.first_name;
-    document.getElementById('playerId').textContent = '#' + data.playerId;
-    document.getElementById('userId').textContent = data.user.id;
-    document.getElementById('level').textContent = data.level;
+    function renderProfile(data) {
+      document.getElementById('avatar').src = data.user.photo_url;
+      document.getElementById('nickname').textContent = data.user.first_name;
+      document.getElementById('playerId').textContent = '#' + data.playerId;
+      document.getElementById('userId').textContent = data.user.id;
+      document.getElementById('level').textContent = data.level;
 
-    if (data.vpi && data.vpi.active) {
-      document.getElementById('vip-badge').style.display = 'inline-block';
+      if (data.vpi && data.vpi.active) {
+        document.getElementById('vip-badge').style.display = 'inline-block';
+      }
+
+      const xpPercent = (data.currentLevelXp / data.nextLevelXp) * 100;
+      setTimeout(() => { document.getElementById('xp-fill').style.width = xpPercent + '%'; }, 100);
+      
+      document.getElementById('authority').textContent = formatNum(data.authority);
+      document.getElementById('biceps').textContent = formatNum(data.biceps);
+      document.getElementById('energy').textContent = `${data.energy} / ${data.maxEnergy}`;
+
+      document.getElementById('poison').textContent = formatNum(data.combatStats.poison);
+      document.getElementById('gunshot').textContent = formatNum(data.combatStats.gunshot);
+      document.getElementById('knife').textContent = formatNum(data.combatStats.knife);
+
+      document.getElementById('cigarettes').textContent = formatNum(data.currencies.cigarettes);
+      document.getElementById('rubles').textContent = formatNum(data.currencies.rubles);
+      document.getElementById('sugar').textContent = formatNum(data.currencies.sugar);
+      document.getElementById('chefir').textContent = formatNum(data.currencies.chefir);
+      document.getElementById('soap').textContent = formatNum(data.currencies.soap);
+      document.getElementById('condensed_milk').textContent = formatNum(data.currencies.condensed_milk);
     }
 
-    const xpPercent = (data.currentLevelXp / data.nextLevelXp) * 100;
-    setTimeout(() => { document.getElementById('xp-fill').style.width = xpPercent + '%'; }, 100);
-    
-    document.getElementById('authority').textContent = formatNum(data.authority);
-    document.getElementById('biceps').textContent = formatNum(data.biceps);
-    document.getElementById('energy').textContent = `${data.energy} / ${data.maxEnergy}`;
+    renderProfile(gameData);
 
-    document.getElementById('poison').textContent = formatNum(data.combatStats.poison);
-    document.getElementById('gunshot').textContent = formatNum(data.combatStats.gunshot);
-    document.getElementById('knife').textContent = formatNum(data.combatStats.knife);
+    setTimeout(() => {
+      document.getElementById('loading-bar').style.width = '100%';
+    }, 100);
 
-    document.getElementById('cigarettes').textContent = formatNum(data.currencies.cigarettes);
-    document.getElementById('rubles').textContent = formatNum(data.currencies.rubles);
-    document.getElementById('sugar').textContent = formatNum(data.currencies.sugar);
-    document.getElementById('chefir').textContent = formatNum(data.currencies.chefir);
-    document.getElementById('soap').textContent = formatNum(data.currencies.soap);
-    document.getElementById('condensed_milk').textContent = formatNum(data.currencies.condensed_milk);
+    setTimeout(() => {
+      const loader = document.getElementById('loading-screen');
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => loader.style.display = 'none', 400);
+    }, 1800);
   }
-
-  // Запускаем отрисовку профиля
-  renderProfile(gameData);
-
-  // Анимация полоски загрузки и скрытие экрана загрузки
-  setTimeout(() => {
-    document.getElementById('loading-bar').style.width = '100%';
-  }, 100);
-
-  setTimeout(() => {
-    const loader = document.getElementById('loading-screen');
-    loader.style.opacity = '0';
-    loader.style.transition = 'opacity 0.4s ease';
-    setTimeout(() => loader.style.display = 'none', 400);
-  }, 1800);
 </script>
 </body>
 </html>
